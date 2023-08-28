@@ -49,15 +49,8 @@ class Home extends StatelessWidget {
                   ExpansionTile(
                     title: const Text('Vision APIs'),
                     children: [
-                      CustomCard('Barcode Scanning', BarcodeScannerView()),
                       CustomCard('Face Detection', FaceDetectorView()),
-                      CustomCard('Face Mesh Detection', FaceMeshDetectorView()),
-                      CustomCard('Image Labeling', ImageLabelView()),
-                      CustomCard('Object Detection', ObjectDetectorView()),
-                      CustomCard('Text Recognition', TextRecognizerView()),
-                      CustomCard('Digital Ink Recognition', DigitalInkView()),
-                      CustomCard('Pose Detection', PoseDetectorView()),
-                      CustomCard('Selfie Segmentation', SelfieSegmenterView()),
+
                     ],
                   ),
                   SizedBox(
