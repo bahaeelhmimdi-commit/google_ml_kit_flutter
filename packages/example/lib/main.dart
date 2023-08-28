@@ -1,110 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
-import 'nlp_detector_views/entity_extraction_view.dart';
-import 'nlp_detector_views/language_identifier_view.dart';
-import 'nlp_detector_views/language_translator_view.dart';
-import 'nlp_detector_views/smart_reply_view.dart';
-import 'vision_detector_views/barcode_scanner_view.dart';
-import 'vision_detector_views/digital_ink_recognizer_view.dart';
-import 'vision_detector_views/face_detector_view.dart';
-import 'vision_detector_views/face_mesh_detector_view.dart';
-import 'vision_detector_views/label_detector_view.dart';
-import 'vision_detector_views/object_detector_view.dart';
-import 'vision_detector_views/pose_detector_view.dart';
-import 'vision_detector_views/selfie_segmenter_view.dart';
-import 'vision_detector_views/text_detector_view.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Home(),
+      title: 'Video Player Demo',
+      home: VideoScreen(),
     );
   }
 }
 
-class Home extends StatelessWidget {
+class VideoScreen extends StatefulWidget {
+  @override
+  _VideoScreenState createState() => _VideoScreenState();
+}
+class _VideoScreenState extends State<VideoScreen> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(
+
+        Uri.parse(
+        'https://showstream-32id.onrender.com/current_event_show'),
+
+    videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
+
+    _controller.addListener(() {
+
+    setState(() {_controller.play();});
+    });
+
+    _controller.setLooping(true);
+    _controller.initialize();
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Google ML Kit Demo App'),
-        centerTitle: true,
-        elevation: 0,
+        title: Text('Video Player Demo'),
       ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  ExpansionTile(
-                    title: const Text('Vision APIs'),
-                    children: [
-                      CustomCard('Face Detection', FaceDetectorView()),
-
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  ExpansionTile(
-                    title: const Text('Natural Language APIs'),
-                    children: [
-                      CustomCard('Language ID', LanguageIdentifierView()),
-                      CustomCard(
-                          'On-device Translation', LanguageTranslatorView()),
-                      CustomCard('Smart Reply', SmartReplyView()),
-                      CustomCard('Entity Extraction', EntityExtractionView()),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+      body: Center(
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        )
+            : CircularProgressIndicator(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            if (_controller.value.isPlaying) {
+              _controller.pause();
+            } else {
+              _controller.play();
+            }
+          });
+        },
+        child: Icon(
+          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
         ),
       ),
     );
   }
-}
-
-class CustomCard extends StatelessWidget {
-  final String _label;
-  final Widget _viewPage;
-  final bool featureCompleted;
-
-  const CustomCard(this._label, this._viewPage, {this.featureCompleted = true});
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        tileColor: Theme.of(context).primaryColor,
-        title: Text(
-          _label,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        onTap: () {
-          if (!featureCompleted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    const Text('This feature has not been implemented yet')));
-          } else {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => _viewPage));
-          }
-        },
-      ),
-    );
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
   }
 }
